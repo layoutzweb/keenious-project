@@ -1,0 +1,66 @@
+version: "3.7"
+
+services:
+  kn-db:
+    image: mongo:latest
+    restart: always
+    expose:
+      - "27017-27019"
+    ports:
+      - "27017-27019:27017-27019"
+    environment:
+      MONGO_INITDB_DATABASE: keenious-project
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    volumes:
+      - "./server/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro"
+
+  kn-db-admin:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: kn-db
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: pass
+
+  kn-server:
+    hostname: "kn-server"
+    container_name: "kn-server-1"
+    build: ./server
+    command: npm start
+    environment:
+      PORT: "3000"
+      DB_URL: "mongodb://kn-db:27017/keenious-project"
+      DB_USER: keenious
+      DB_PASS: pass
+      UPLOAD_PATH: uploads
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./server/src:/usr/src/app/src"
+    depends_on:
+      - kn-db
+
+  kn-client:
+    hostname: "kn-client"
+    container_name: "kn-client-1"
+    command: npm start
+    build: ./app
+    stdin_open: true
+    environment:
+      PORT: "3001"
+    ports:
+      - "3001:3001"
+    volumes:
+      - "./app:/usr/src/app"
+    depends_on:
+      - kn-db
+      - kn-server
+
+networks:
+  default:
+    external:
+      name: kn_default
