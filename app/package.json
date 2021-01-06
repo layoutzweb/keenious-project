@@ -11,7 +11,7 @@
     "lint:fix": "eslint src/** --fix"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "cross-env": "^7.0.2",
     "evergreen-ui": "^4.27.4",
     "prop-types": "^15.7.2",
